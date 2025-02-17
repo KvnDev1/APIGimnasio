@@ -16,7 +16,6 @@ namespace APIGimnasio.Controllers
             _context = context;
         }
 
-        // GET: api/clase
         [HttpGet("MostrarClases")]
         public async Task<ActionResult<IEnumerable<ClaseDTO>>> GetClases()
         {
@@ -34,7 +33,7 @@ namespace APIGimnasio.Controllers
             return Ok(clases);
         }
 
-        // GET: api/clase/{id}
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ClaseDTO>> GetClaseById(Guid id)
         {
@@ -55,7 +54,6 @@ namespace APIGimnasio.Controllers
             });
         }
 
-        // POST: api/clase
         [HttpPost("CrearNuevaClase")]
         public async Task<ActionResult> CrearClase(ClaseDTO claseDto)
         {
@@ -65,7 +63,7 @@ namespace APIGimnasio.Controllers
                 Nombre = claseDto.Nombre,
                 Descripcion = claseDto.Descripcion,
                 Horario = claseDto.Horario,
-                CapacidadMaxima= claseDto.CapacidadMaxima,
+                CapacidadMaxima = claseDto.CapacidadMaxima,
                 Inscripciones = new List<Inscripcion>() // Se inicializa vacío
             };
 
@@ -74,7 +72,6 @@ namespace APIGimnasio.Controllers
             return Ok("Clase creada exitosamente");
         }
 
-        // PUT: api/clase/{id}
         [HttpPut("ActualizarClase{id}")]
         public async Task<IActionResult> ActualizarClase(Guid id, ClaseDTO claseDto)
         {
@@ -96,7 +93,6 @@ namespace APIGimnasio.Controllers
             return Ok("Clase actualizada exitosamente");
         }
 
-        // DELETE: api/clase/{id}
         [HttpDelete("EliminarClase{id}")]
         public async Task<IActionResult> EliminarClase(Guid id)
         {
