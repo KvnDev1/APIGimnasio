@@ -15,7 +15,16 @@ namespace APIGimnasio.Models
         [Required]
         public int CapacidadMaxima {get; set;}
 
-        //Aqui van las relaciones, en este caso la relacion entre Clase e Inscripcion
+        //Relacion: 1 Clase puede tener * Inscripciones
         public ICollection<Inscripcion> Inscripciones { get; set; } = new List<Inscripcion>();
+
+        //Relacion entre Clase y Profesor
+        //Clave foranea de Profesor
+        public Guid ProfesorId {get; set;}
+
+        //Relacion: 1 Clase puede tener 1 Profesor
+        public Profesor Profesor { get; set; } = null!;
+
+
     }
 }

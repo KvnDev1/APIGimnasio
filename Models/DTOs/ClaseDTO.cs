@@ -14,5 +14,7 @@ namespace APIGimnasio.Models.DTOs
         public string Horario {get; set;} = string.Empty;
         [Required]
         public int CapacidadMaxima {get; set;}
+        public Guid ProfesorId  { get; set;} //ID del Profesor
+        public string ProfesorNombre {get; set;} = string.Empty; //Nombre del profesor
     }
 }

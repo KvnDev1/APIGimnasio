@@ -7,6 +7,7 @@ public class ApiDbContext : DbContext
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Clase> Clases { get; set; }
     public DbSet<Inscripcion> Inscripciones { get; set; }
+    public DbSet<Profesor> Profesores { get; set; } //Nuevo DbSet Profesores
 
     public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
 
@@ -30,5 +31,11 @@ public class ApiDbContext : DbContext
             .WithMany(c => c.Inscripciones)  // Una clase puede tener muchas inscripciones
             .HasForeignKey(i => i.ClaseId)
             .OnDelete(DeleteBehavior.Cascade);  // Si se elimina la clase, se eliminan las inscripciones
+
+        modelBuilder.Entity<Clase>()
+            .HasOne(c => c.Profesor)
+            .WithMany(p => p.Clases)
+            .HasForeignKey(c => c.ProfesorId)
+            .OnDelete(DeleteBehavior.Restrict); // No eliminar profesor si se elimina una clase
     }
 }
