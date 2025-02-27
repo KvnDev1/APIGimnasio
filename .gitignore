@@ -1,0 +1,55 @@
+# Archivos de compilación
+bin/
+obj/
+ref/
+refint/
+
+# Archivos de usuario y configuraciones de IDE
+*.user
+*.suo
+*.vcxproj.user
+*.rsuser
+.vscode/
+*.csproj.user
+
+# Archivos de dependencias
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+project.nuget.cache
+
+# Archivos de depuración y temporales
+*.pdb
+*.log
+*.cache
+*.sourcelink.json
+*.dll
+*.exe
+*.csproj.CoreCompileInputs.cache
+*.csproj.FileListAbsolute.txt
+
+# Configuración de Entity Framework y migraciones automáticas
+Migrations/ApiDbContextModelSnapshot.cs
+Migrations/*.Designer.cs
+Migrations/*.cs
+
+# Archivos de configuración de Git
+
+.gitmodules
+
+# Archivos de compilación y estáticos generados por ASP.NET Core
+staticwebassets.build.json
+staticwebassets.build.endpoints.json
+staticwebassets.msbuild.build.*
+staticwebassets.endpoints.json
+
+# Configuración y archivos de compilación de MSBuild
+*.nuget.dgspec.json
+*.nuget.g.props
+*.msbuild.*
+
+# Archivos temporales de compilación
+apphost.exe
+obj/Debug/net*/
+obj/Release/net*/
