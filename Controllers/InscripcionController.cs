@@ -23,12 +23,14 @@ namespace APIGimnasio.Controllers
             var inscripciones = await _context.Inscripciones
                 .Include(i => i.Usuario)  // Incluir detalles del usuario
                 .Include(i => i.Clase)    // Incluir detalles de la clase
+                .ThenInclude(c => c.Profesor) // Incluir detalles del profesor
                 .Select(i => new InscripcionDTO
                 {
                     InscripcionId = i.InscripcionId,
-                    UsuarioId = i.UsuarioId,
-                    ClaseId = i.ClaseId,
-                    FechaInscripcion = i.FechaInscripcion
+                    UsuarioNombre = i.Usuario != null ? $"{i.Usuario.Nombre} {i.Usuario.Apellido}" : "Usuario no especificado",
+                    ClaseNombre = i.Clase != null ? i.Clase.Nombre : "Clase no especificada",
+                    ProfesorNombre = i.Clase != null && i.Clase.Profesor != null ? $"{i.Clase.Profesor.Nombre} {i.Clase.Profesor.Apellido}" : "Profesor no especificado",
+                    FechaInscripcion = i.FechaInscripcion,
                 })
                 .ToListAsync();
 
@@ -39,26 +41,28 @@ namespace APIGimnasio.Controllers
         [HttpGet("MostrarInscripcionesPor{id}")]
         public async Task<ActionResult<InscripcionDTO>> GetInscripcionById(Guid id)
         {
-            var inscripcion = await _context.Inscripciones
-                .Include(i => i.Usuario)
-                .Include(i => i.Clase)
+            var inscripciones = await _context.Inscripciones
+                .Include(i => i.Usuario) // Incluir detalles del usuario
+                .Include(i => i.Clase) // Incluir detalles de la clase
+                .ThenInclude(c => c.Profesor) // Incluir detalles del profesor
                 .FirstOrDefaultAsync(i => i.InscripcionId == id);
 
-            if (inscripcion == null)
+            if (inscripciones == null)
                 return NotFound("Inscripción no encontrada");
 
             return Ok(new InscripcionDTO
             {
-                InscripcionId = inscripcion.InscripcionId,
-                UsuarioId = inscripcion.UsuarioId,
-                ClaseId = inscripcion.ClaseId,
-                FechaInscripcion = inscripcion.FechaInscripcion
+                InscripcionId = inscripciones.InscripcionId,
+                UsuarioNombre = inscripciones.Usuario != null ? $"{inscripciones.Usuario.Nombre} {inscripciones.Usuario.Apellido}" : "Usuario no especificado",
+                ClaseNombre = inscripciones.Clase != null ? inscripciones.Clase.Nombre : "Clase no especificada",
+                ProfesorNombre = inscripciones.Clase != null && inscripciones.Clase.Profesor != null ? $"{inscripciones.Clase.Profesor.Nombre} {inscripciones.Clase.Profesor.Apellido}" : "Profesor no especificado",
+                FechaInscripcion = inscripciones.FechaInscripcion,
             });
         }
 
 
         [HttpPost("CrearNuevaInscripcion")]
-        public async Task<ActionResult> CrearInscripcion(InscripcionDTO inscripcionDto)
+        public async Task<ActionResult> CrearInscripcion([FromBody]InscripcionCreateDTO inscripcionDto)
         {
             var usuario = await _context.Usuarios.FindAsync(inscripcionDto.UsuarioId);
             var clase = await _context.Clases.Include(c => c.Inscripciones).FirstOrDefaultAsync(c => c.ClaseId == inscripcionDto.ClaseId);
@@ -83,7 +87,6 @@ namespace APIGimnasio.Controllers
             // Crear la inscripción
             Inscripcion nuevaInscripcion = new Inscripcion
             {
-                InscripcionId = Guid.NewGuid(),
                 UsuarioId = inscripcionDto.UsuarioId,
                 ClaseId = inscripcionDto.ClaseId,
                 FechaInscripcion = DateTime.UtcNow
@@ -92,7 +95,7 @@ namespace APIGimnasio.Controllers
             _context.Inscripciones.Add(nuevaInscripcion);
             await _context.SaveChangesAsync();
 
-            return Ok("Inscripción creada exitosamente");
+            return Ok("Inscripción creada exitosamente con la ID: " + nuevaInscripcion.InscripcionId);
         }
 
         // DELETE: api/inscripcion/{id}

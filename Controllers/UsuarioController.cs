@@ -23,24 +23,25 @@ namespace APIGimnasio.Controllers
             var usuarios = await _context.Usuarios
                 .Include(u => u.Inscripciones)  // Incluir inscripciones
                 .ThenInclude(i => i.Clase)      // Incluir detalles de la clase
+                .ThenInclude(c => c.Profesor)   // Incluir detalles del profesor
                 .Select(u => new UsuarioDTO
                 {
                     UsuarioId = u.UsuarioId,
                     Nombre = u.Nombre,
                     Apellido = u.Apellido,
                     Telefono = u.Telefono,
-
-                    // Mapear las clases inscritas al UsuarioDTO
                     ClasesInscritas = u.Inscripciones
-            .Where(i => i.Clase != null)  // Filtrar inscripciones sin clases asociadas
-            .Select(i => new ClaseDTO
-            {   // Aqui tenia error porque no estaba asegurando de que ClaseId no fuera Null
-                ClaseId = i.Clase!.ClaseId, // Se soluciono con i.Clase! 
-                Nombre = i.Clase.Nombre ?? "Clase no especificada",
-                Descripcion = i.Clase.Descripcion ?? "Sin descripción",
-                Horario = i.Clase.Horario ?? "Horario no especificado",
-                CapacidadMaxima = i.Clase.CapacidadMaxima
-            }).ToList()
+                        .Where(i => i.Clase != null)  // Filtrar inscripciones sin clases asociadas
+                        .Select(i => new ClaseDTO
+                        {
+                            ClaseId = i.Clase!.ClaseId, // Se soluciono con i.Clase!
+                            Nombre = i.Clase.Nombre ?? "Clase no especificada",
+                            Descripcion = i.Clase.Descripcion ?? "Sin descripción",
+                            Horario = i.Clase.Horario ?? "Horario no especificado",
+                            CapacidadMaxima = i.Clase.CapacidadMaxima,
+                            ProfesorId = i.Clase.ProfesorId,
+                            ProfesorNombre = i.Clase.Profesor != null ? $"{i.Clase.Profesor.Nombre} {i.Clase.Profesor.Apellido}" : "Sin profesor asignado"
+                        }).ToList()
                 })
                 .ToListAsync();
 
@@ -51,7 +52,12 @@ namespace APIGimnasio.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuarioDTO>> GetUsuarioById(Guid id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
+            var usuario = await _context.Usuarios
+                .Include(u => u.Inscripciones)  // Incluir inscripciones
+                .ThenInclude(i => i.Clase)      // Incluir detalles de la clase
+                .ThenInclude(c => c.Profesor)   // Incluir detalles del profesor
+                .FirstOrDefaultAsync(u => u.UsuarioId == id);
+
             if (usuario == null)
                 return NotFound("Usuario no encontrado");
 
@@ -61,7 +67,19 @@ namespace APIGimnasio.Controllers
                 UsuarioId = usuario.UsuarioId,
                 Nombre = usuario.Nombre,
                 Apellido = usuario.Apellido,
-                Telefono = usuario.Telefono
+                Telefono = usuario.Telefono,
+                ClasesInscritas = usuario.Inscripciones
+                    .Where(i => i.Clase != null)  // Filtrar inscripciones sin clases asociadas
+                    .Select(i => new ClaseDTO
+                    {
+                        ClaseId = i.Clase!.ClaseId, // Se soluciono con i.Clase!
+                        Nombre = i.Clase.Nombre ?? "Clase no especificada",
+                        Descripcion = i.Clase.Descripcion ?? "Sin descripción",
+                        Horario = i.Clase.Horario ?? "Horario no especificado",
+                        CapacidadMaxima = i.Clase.CapacidadMaxima,
+                        ProfesorId = i.Clase.ProfesorId,
+                        ProfesorNombre = i.Clase.Profesor != null ? $"{i.Clase.Profesor.Nombre} {i.Clase.Profesor.Apellido}" : "Sin profesor asignado"
+                    }).ToList()
             };
 
             return Ok(usuarioDto);
@@ -69,19 +87,18 @@ namespace APIGimnasio.Controllers
 
         // POST: api/usuario/CrearNuevoUsuario
         [HttpPost("CrearNuevoUsuario")]
-        public async Task<ActionResult> CrearNuevoUsuario(UsuarioDTO Udto)
+        public async Task<ActionResult> CrearNuevoUsuario(UsuarioCreateDTO usuariodto)
         {
-            Usuario usuario = new Usuario
+            Usuario nuevoUsuario = new Usuario
             {
-                UsuarioId = Guid.NewGuid(),
-                Nombre = Udto.Nombre,
-                Apellido = Udto.Apellido,
-                Telefono = Udto.Telefono
+                Nombre = usuariodto.Nombre,
+                Apellido = usuariodto.Apellido,
+                Telefono = usuariodto.Telefono
             };
 
-            _context.Usuarios.Add(usuario);
+            _context.Usuarios.Add(nuevoUsuario);
             await _context.SaveChangesAsync();
-            return Ok("Usuario creado exitosamente");
+            return Ok("Usuario creado exitosamente con ID: " + nuevoUsuario.UsuarioId);
         }
 
         // PUT: api/usuario/ActualizarUsuario/{id}
@@ -116,7 +133,6 @@ namespace APIGimnasio.Controllers
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
             return Ok("Usuario eliminado exitosamente");
-
         }
     }
 }
